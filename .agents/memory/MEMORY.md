@@ -1,0 +1,1 @@
+- [Prototype identity and evidence limits](fdr-sentinel-demo-boundaries.md) — demo role switching is not real authentication; simulated evidence metadata is not a stored receipt.

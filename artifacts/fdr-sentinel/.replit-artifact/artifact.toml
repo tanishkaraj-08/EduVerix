@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "FDR Sentinel"
+description = "A role-aware FDR and security-deposit assurance portal for institutions and authorized reviewers. Track submissions, verification, maturity, renewals and releases with auditable workflows and clearly labeled fictional demo records."
+version = "1.0.0"
+id = "artifacts/fdr-sentinel"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19538
+
+[services.development]
+run = "pnpm --filter @workspace/fdr-sentinel run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/fdr-sentinel", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/fdr-sentinel/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19538"
+BASE_PATH = "/"

@@ -1,6 +1,6 @@
-# [Project name]
+# FDR Sentinel
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+FDR Sentinel streamlines institutional security-deposit and fixed-deposit receipt submissions, officer review, maturity monitoring, renewal and release workflows.
 
 ## Run & Operate
 
@@ -22,23 +22,36 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/fdr-sentinel` — React web application and role-aware workflows
+- `artifacts/api-server/src/routes` — API handlers and server-side demo-role checks
+- `lib/api-spec/openapi.yaml` — source of truth for API contracts
+- `lib/db/src/schema` — PostgreSQL tables for institutions, FDRs, evidence metadata, audit events, demo users and settings
+- `artifacts/api-server/src/lib/seed-demo-data.ts` — fictional demo records
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Demo roles use signed cookies and server-side role checks so judges can explore each workflow without an external sign-in.
+- Evidence submissions are simulated metadata only; the selected file's bytes are not stored or presented as proof of bank authenticity.
+- Dashboard metrics and charts are derived from PostgreSQL records and refresh after workflow changes.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+The prototype provides institution registration, FDR submission and search, officer review decisions, correction requests, renewal and release actions, maturity alerts, audit history, supervisor workload monitoring, and administrator demo-role/settings controls.
+
+**Product identity:** Intelligent Security Deposit Assurance  
+**Problem statement:** SIH 2026 — PS 26265  
+**Disclaimer:** “Hackathon Prototype — Not an Official AICTE Service.”
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Use an original government-inspired interface with deep navy, white, restrained saffron and green; do not use official AICTE branding or government emblems.
+- Keep all demo information clearly identified as fictional prototype data.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Demo role selection is intentionally open for judge exploration and is not production identity verification.
+- Evidence metadata is persisted, but file bytes are not. Do not describe simulated evidence as a stored document or as bank-authenticated.
+- Production uploads require real authentication, private object storage, and ownership-based access controls.
 
 ## Pointers
 

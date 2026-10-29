@@ -3,20 +3,23 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: FDR Sentinel demo and institutional workflow API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: session
+  - name: dashboard
+  - name: institutions
+  - name: fdrs
+  - name: administration
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +27,389 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /session:
+    get:
+      operationId: getSession
+      tags: [session]
+      summary: Get the current demo role
+      responses:
+        "200":
+          description: Current demo session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemoSession"
+  /session/demo-role:
+    post:
+      operationId: switchDemoRole
+      tags: [session]
+      summary: Switch the active demo role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DemoRoleInput"
+      responses:
+        "200":
+          description: Updated demo session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemoSession"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get dashboard metrics, charts, and recent activity
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /activity:
+    get:
+      operationId: listActivity
+      tags: [dashboard]
+      summary: List recent audit activity
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityEvent"
+  /institutions:
+    get:
+      operationId: listInstitutions
+      tags: [institutions]
+      summary: Search and list institutions
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        "200":
+          description: Institution page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InstitutionListResponse"
+    post:
+      operationId: createInstitution
+      tags: [institutions]
+      summary: Register an institution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InstitutionInput"
+      responses:
+        "201":
+          description: Institution created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Institution"
+        "409":
+          description: Identifier already exists
+  /institutions/{institutionId}:
+    parameters:
+      - name: institutionId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getInstitution
+      tags: [institutions]
+      summary: Get an institution profile
+      responses:
+        "200":
+          description: Institution profile and linked FDRs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InstitutionProfile"
+        "404":
+          description: Institution not found
+    patch:
+      operationId: updateInstitution
+      tags: [institutions]
+      summary: Update institution details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InstitutionUpdate"
+      responses:
+        "200":
+          description: Institution updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Institution"
+  /fdrs:
+    get:
+      operationId: listFdrs
+      tags: [fdrs]
+      summary: Search and filter FDR records
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/RecordStatus"
+        - name: attention
+          in: query
+          schema:
+            type: string
+            enum: [pending, maturing, overdue, urgent]
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [institutionName, referenceNumber, bankName, amount, maturityDate, status, riskLevel]
+            default: maturityDate
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+        - name: institutionId
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        "200":
+          description: FDR records page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FdrListResponse"
+    post:
+      operationId: createFdr
+      tags: [fdrs]
+      summary: Submit a new FDR record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FdrInput"
+      responses:
+        "201":
+          description: FDR submitted; potential duplicates are flagged for review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FdrDetail"
+        "400":
+          description: Invalid dates or amount
+        "404":
+          description: Institution not found
+  /fdrs/{recordId}:
+    parameters:
+      - name: recordId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getFdr
+      tags: [fdrs]
+      summary: Get an FDR and its review history
+      responses:
+        "200":
+          description: FDR detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FdrDetail"
+        "404":
+          description: FDR not found
+  /fdrs/{recordId}/actions:
+    parameters:
+      - name: recordId
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: actOnFdr
+      tags: [fdrs]
+      summary: Review or advance an FDR workflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FdrActionInput"
+      responses:
+        "200":
+          description: Workflow action recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FdrDetail"
+        "400":
+          description: Invalid action or missing decision reason
+        "403":
+          description: The active demo role cannot perform this action
+        "404":
+          description: FDR not found
+  /fdrs/{recordId}/evidence:
+    parameters:
+      - name: recordId
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: addEvidence
+      tags: [fdrs]
+      summary: Record a clearly labelled simulated evidence upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EvidenceInput"
+      responses:
+        "201":
+          description: Evidence metadata recorded; file bytes are not stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Evidence"
+        "400":
+          description: Invalid file metadata
+        "403":
+          description: The active demo role cannot add evidence
+        "404":
+          description: FDR not found
+  /admin/users:
+    get:
+      operationId: listDemoUsers
+      tags: [administration]
+      summary: List demo accounts and assigned roles
+      responses:
+        "200":
+          description: Demo users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DemoUser"
+        "403":
+          description: Administrator role required
+  /admin/users/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+    patch:
+      operationId: updateDemoUser
+      tags: [administration]
+      summary: Update a demo user's role or active state
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DemoUserUpdate"
+      responses:
+        "200":
+          description: Demo user updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemoUser"
+        "403":
+          description: Administrator role required
+        "404":
+          description: Demo user not found
+  /admin/settings:
+    get:
+      operationId: getSettings
+      tags: [administration]
+      summary: Get workflow configuration
+      responses:
+        "200":
+          description: Configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppSettings"
+        "403":
+          description: Administrator role required
+    patch:
+      operationId: updateSettings
+      tags: [administration]
+      summary: Update workflow configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SettingsUpdate"
+      responses:
+        "200":
+          description: Configuration updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppSettings"
+        "403":
+          description: Administrator role required
 components:
   schemas:
     HealthStatus:
@@ -31,6 +417,286 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
-
+      required: [status]
+    DemoRole:
+      type: string
+      enum: [institution_user, regulation_officer, supervisor, administrator]
+    DemoRoleInput:
+      type: object
+      properties:
+        role:
+          $ref: "#/components/schemas/DemoRole"
+      required: [role]
+    DemoSession:
+      type: object
+      properties:
+        role:
+          $ref: "#/components/schemas/DemoRole"
+        fullName:
+          type: string
+        email:
+          type: string
+        institutionId:
+          type: [string, "null"]
+        demoMode:
+          type: boolean
+      required: [role, fullName, email, institutionId, demoMode]
+    RecordStatus:
+      type: string
+      enum:
+        - draft
+        - submitted
+        - under_review
+        - correction_required
+        - verified
+        - rejected
+        - renewal_pending
+        - release_requested
+        - released
+        - closed
+    RiskLevel:
+      type: string
+      enum: [low, medium, high]
+    Institution:
+      type: object
+      properties:
+        id: { type: string }
+        identifier: { type: string }
+        name: { type: string }
+        state: { type: string }
+        region: { type: string }
+        contactName: { type: string }
+        contactEmail: { type: string }
+        phone: { type: string }
+        createdAt: { type: string, format: date-time }
+        fdrCount: { type: integer }
+        openIssues: { type: integer }
+      required: [id, identifier, name, state, region, contactName, contactEmail, phone, createdAt, fdrCount, openIssues]
+    InstitutionInput:
+      type: object
+      properties:
+        identifier: { type: string, minLength: 2, maxLength: 30 }
+        name: { type: string, minLength: 2, maxLength: 180 }
+        state: { type: string, minLength: 2, maxLength: 80 }
+        region: { type: string, minLength: 2, maxLength: 80 }
+        contactName: { type: string, minLength: 2, maxLength: 120 }
+        contactEmail: { type: string, format: email }
+        phone: { type: string, minLength: 7, maxLength: 30 }
+      required: [identifier, name, state, region, contactName, contactEmail, phone]
+    InstitutionUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 2, maxLength: 180 }
+        state: { type: string, minLength: 2, maxLength: 80 }
+        region: { type: string, minLength: 2, maxLength: 80 }
+        contactName: { type: string, minLength: 2, maxLength: 120 }
+        contactEmail: { type: string, format: email }
+        phone: { type: string, minLength: 7, maxLength: 30 }
+    InstitutionListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Institution" }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+      required: [items, total, page, pageSize]
+    InstitutionProfile:
+      type: object
+      properties:
+        institution: { $ref: "#/components/schemas/Institution" }
+        records:
+          type: array
+          items: { $ref: "#/components/schemas/FdrRecord" }
+        outstandingIssues:
+          type: array
+          items: { type: string }
+      required: [institution, records, outstandingIssues]
+    FdrRecord:
+      type: object
+      properties:
+        id: { type: string }
+        institutionId: { type: string }
+        institutionIdentifier: { type: string }
+        institutionName: { type: string }
+        bankName: { type: string }
+        branchName: { type: string }
+        referenceNumber: { type: string }
+        amount: { type: number }
+        currency: { type: string }
+        issueDate: { type: string, format: date }
+        maturityDate: { type: string, format: date }
+        lastUpdated: { type: string, format: date-time }
+        status: { $ref: "#/components/schemas/RecordStatus" }
+        assignedOfficer: { type: [string, "null"] }
+        riskLevel: { $ref: "#/components/schemas/RiskLevel" }
+        riskReason: { type: [string, "null"] }
+        nextAction: { type: [string, "null"] }
+        evidenceCount: { type: integer }
+        duplicateOfId: { type: [string, "null"] }
+        createdAt: { type: string, format: date-time }
+      required: [id, institutionId, institutionIdentifier, institutionName, bankName, branchName, referenceNumber, amount, currency, issueDate, maturityDate, lastUpdated, status, assignedOfficer, riskLevel, riskReason, nextAction, evidenceCount, duplicateOfId, createdAt]
+    FdrInput:
+      type: object
+      properties:
+        institutionId: { type: string }
+        bankName: { type: string, minLength: 2, maxLength: 120 }
+        branchName: { type: string, minLength: 2, maxLength: 160 }
+        referenceNumber: { type: string, minLength: 3, maxLength: 100 }
+        amount: { type: number, exclusiveMinimum: 0 }
+        currency: { type: string, minLength: 3, maxLength: 3, default: INR }
+        issueDate: { type: string, format: date }
+        maturityDate: { type: string, format: date }
+      required: [institutionId, bankName, branchName, referenceNumber, amount, issueDate, maturityDate]
+    FdrListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/FdrRecord" }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+      required: [items, total, page, pageSize]
+    Evidence:
+      type: object
+      properties:
+        id: { type: string }
+        recordId: { type: string }
+        evidenceType: { type: string, enum: [fdr_receipt, bank_confirmation, authorization_letter, other] }
+        fileName: { type: string }
+        contentType: { type: string }
+        sizeBytes: { type: integer }
+        status: { type: string, enum: [simulated_upload, sample_evidence] }
+        uploadedAt: { type: string, format: date-time }
+        previousVersionId: { type: [string, "null"] }
+      required: [id, recordId, evidenceType, fileName, contentType, sizeBytes, status, uploadedAt, previousVersionId]
+    EvidenceInput:
+      type: object
+      properties:
+        evidenceType: { type: string, enum: [fdr_receipt, bank_confirmation, authorization_letter, other] }
+        fileName: { type: string, minLength: 1, maxLength: 255 }
+        contentType: { type: string, minLength: 1, maxLength: 120 }
+        sizeBytes: { type: integer, minimum: 1, maximum: 15728640 }
+      required: [evidenceType, fileName, contentType, sizeBytes]
+    ActivityEvent:
+      type: object
+      properties:
+        id: { type: string }
+        actor: { type: string }
+        role: { $ref: "#/components/schemas/DemoRole" }
+        action: { type: string }
+        details: { type: string }
+        recordId: { type: [string, "null"] }
+        institutionName: { type: [string, "null"] }
+        createdAt: { type: string, format: date-time }
+      required: [id, actor, role, action, details, recordId, institutionName, createdAt]
+    FdrDetail:
+      type: object
+      properties:
+        record: { $ref: "#/components/schemas/FdrRecord" }
+        institution: { $ref: "#/components/schemas/Institution" }
+        evidence:
+          type: array
+          items: { $ref: "#/components/schemas/Evidence" }
+        history:
+          type: array
+          items: { $ref: "#/components/schemas/ActivityEvent" }
+      required: [record, institution, evidence, history]
+    FdrActionInput:
+      type: object
+      properties:
+        action:
+          type: string
+          enum: [submit, start_review, verify, reject, request_correction, request_renewal, request_release, mark_released, close, assign, add_note]
+        reason: { type: [string, "null"], maxLength: 1200 }
+        note: { type: [string, "null"], maxLength: 4000 }
+        missingEvidence:
+          type: array
+          items: { type: string, maxLength: 120 }
+        assignedOfficer: { type: [string, "null"], maxLength: 160 }
+      required: [action]
+    DashboardMetric:
+      type: object
+      properties:
+        key: { type: string }
+        label: { type: string }
+        value: { type: integer }
+        filter: { type: [string, "null"] }
+      required: [key, label, value, filter]
+    StatusCount:
+      type: object
+      properties:
+        status: { $ref: "#/components/schemas/RecordStatus" }
+        count: { type: integer }
+      required: [status, count]
+    MaturityPoint:
+      type: object
+      properties:
+        month: { type: string }
+        upcoming: { type: integer }
+        matured: { type: integer }
+      required: [month, upcoming, matured]
+    RegionCount:
+      type: object
+      properties:
+        region: { type: string }
+        count: { type: integer }
+      required: [region, count]
+    OfficerWorkload:
+      type: object
+      properties:
+        officer: { type: string }
+        pending: { type: integer }
+        overdue: { type: integer }
+      required: [officer, pending, overdue]
+    DashboardSummary:
+      type: object
+      properties:
+        metrics:
+          type: array
+          items: { $ref: "#/components/schemas/DashboardMetric" }
+        statusBreakdown:
+          type: array
+          items: { $ref: "#/components/schemas/StatusCount" }
+        maturityTrend:
+          type: array
+          items: { $ref: "#/components/schemas/MaturityPoint" }
+        institutionSubmissions:
+          type: array
+          items: { $ref: "#/components/schemas/RegionCount" }
+        caseWorkload:
+          type: array
+          items: { $ref: "#/components/schemas/OfficerWorkload" }
+        recentActivity:
+          type: array
+          items: { $ref: "#/components/schemas/ActivityEvent" }
+      required: [metrics, statusBreakdown, maturityTrend, institutionSubmissions, caseWorkload, recentActivity]
+    DemoUser:
+      type: object
+      properties:
+        id: { type: string }
+        fullName: { type: string }
+        email: { type: string, format: email }
+        role: { $ref: "#/components/schemas/DemoRole" }
+        active: { type: boolean }
+      required: [id, fullName, email, role, active]
+    DemoUserUpdate:
+      type: object
+      properties:
+        role: { $ref: "#/components/schemas/DemoRole" }
+        active: { type: boolean }
+    AppSettings:
+      type: object
+      properties:
+        maturityWarningDays: { type: integer, minimum: 1, maximum: 365 }
+        requireBankConfirmation: { type: boolean }
+        notifyOnMaturity: { type: boolean }
+      required: [maturityWarningDays, requireBankConfirmation, notifyOnMaturity]
+    SettingsUpdate:
+      type: object
+      properties:
+        maturityWarningDays: { type: integer, minimum: 1, maximum: 365 }
+        requireBankConfirmation: { type: boolean }
+        notifyOnMaturity: { type: boolean }

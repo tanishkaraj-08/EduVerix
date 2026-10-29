@@ -1,0 +1,118 @@
+# PROJECT: FDR SENTINEL
+## SIH 2026 — Problem Statement 26265
+### Streamline of Security Deposit / FDR Portal
+
+Act as a senior full-stack software engineer, UI/UX designer, and application security engineer. Build a complete, functional, professional web application for a Smart India Hackathon prototype.
+
+Do not create only a static landing page or a dashboard with fake buttons. Build a working application with navigation, forms, validation, persistent records, workflows, alerts, and realistic demo scenarios.
+
+## 1. PRODUCT IDENTITY
+
+Application name: FDR Sentinel  
+Tagline: Intelligent Security Deposit Assurance  
+Problem Statement: SIH 2026 — PS 26265  
+Disclaimer: “Hackathon Prototype — Not an Official AICTE Service.”
+
+The application is designed to streamline how institutions submit and manage Fixed Deposit Receipts (FDRs) and how authorized officers review, monitor, renew, and process their release.
+
+Use an original, government-inspired design. Do not copy official AICTE branding, government emblems, or protected assets.
+
+## 2. DESIGN AND USER EXPERIENCE
+
+Create a polished, modern enterprise application suitable for a national-level hackathon presentation.
+
+- Deep navy blue, white, and restrained saffron and green accents.
+- Professional typography, accessible contrast, consistent spacing and clean data tables.
+- A persistent sidebar, top navigation, notification centre and profile menu.
+- Responsive layout for laptop, tablet and mobile.
+- Meaningful icons, clear status badges, charts, timelines, and helpful empty states.
+- Smooth but subtle interactions. Avoid excessive gradients and unnecessary animations.
+- The dashboard must look credible for an institutional regulatory workflow, not like a generic AI-generated template.
+
+## 3. USER ROLES AND ACCESS
+
+Implement role-aware navigation and authorization for:
+
+1. Institution User — register institutions, submit FDRs, upload supporting documents, view own records, respond to corrections and request renewal or release.
+2. Regulation Officer — review assigned cases, inspect evidence, request corrections, verify records and recommend actions.
+3. Supervisor — monitor officer workload, overdue cases, escalations and pending decisions.
+4. Administrator — manage users, roles, institution records, configuration and audit reports.
+
+Create a working demo login or role-switching demo mode so judges can explore all roles without external registration. Clearly identify demo mode.
+
+Enforce authorization on the backend/database wherever supported. Hiding a button alone is not sufficient.
+
+## 4. EXECUTIVE DASHBOARD
+
+Build a live dashboard backed by application data, with:
+
+- Total registered institutions.
+- Total FDR records.
+- Pending verification.
+- Verified FDRs.
+- FDRs approaching maturity.
+- Matured or overdue FDRs.
+- Renewals and replacements pending.
+- Release/refund requests pending.
+- Cases requiring urgent attention.
+- Recent activity and audit events.
+- Charts for FDR status, maturity trends, institution submissions and case workload.
+
+Every metric must update when a user performs an action. Clicking a metric should navigate to the corresponding filtered records.
+
+Use realistic fictional demo data. Label all demo information clearly.
+
+## 5. INSTITUTION PROFILE AND FDR REPOSITORY
+
+Create a searchable institution directory with a unique institution identifier, institution name, state, region and contact information.
+
+Each institution must have a consolidated profile showing all its FDR records, submissions, verification outcomes, renewal history, release requests and outstanding issues.
+
+Build an FDR repository with:
+
+- Unique internal FDR record ID.
+- Institution identifier and institution name.
+- Bank name and branch.
+- FDR reference number.
+- Deposit amount and currency.
+- Issue date, maturity date and last updated date.
+- Supporting document and verification status.
+- Assigned officer.
+- Risk level, reason and next required action.
+- Search, sorting, pagination and filters.
+
+Add a registration form with validation for required fields, date consistency, positive amounts and duplicate references. Flag potential duplicates for review rather than silently creating duplicate records.
+
+## 6. SECURE DOCUMENT SUBMISSION
+
+Allow users to upload an FDR receipt and supporting documents using secure file storage when available.
+
+Requirements:
+- Validate file types and file sizes.
+- Store documents privately; do not expose public file URLs.
+- Restrict document access according to user role and institution ownership.
+- Display upload status, filename and submission timestamp.
+- Show missing or incomplete evidence clearly.
+- Support document replacement with a record of previous submissions.
+- Provide a clear error message if upload or storage is unavailable.
+
+For demo data, allow clearly labelled sample evidence or simulated uploads if persistent file storage is unavailable.
+
+Never claim that reading an uploaded receipt proves that a bank issued it. Actual bank authenticity verification requires an authorized verification mechanism or human review.
+
+## 7. OFFICER VERIFICATION WORKSPACE
+
+Create a dedicated review page containing institution details, FDR metadata, available evidence, dates, history, risk flags and assigned officer.
+
+Officers must be able to:
+- Mark a case as Under Review.
+- Approve or verify a record.
+- Reject a submission with a mandatory reason.
+- Request corrections and specify missing evidence.
+- Add review notes.
+- Assign or reassign cases where permitted.
+- Record the decision, reviewer and timestamp.
+
+Maintain explicit statuses such as Draft, Submitted, Under Review, Correction Required, Verified, Rejected, Renewal Pending, Release Requested, Released and Closed.
+
+Use
