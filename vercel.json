@@ -1,8 +1,8 @@
 {
-  "buildCommand": "cd artifacts/fdr-sentinel && pnpm build",
-  "outputDirectory": "artifacts/fdr-sentinel/dist/public",
-  "framework": null,
+  "buildCommand": "pnpm --filter @workspace/fdr-sentinel run build",
+  "outputDirectory": "artifacts/fdr-sentinel/dist",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
+
